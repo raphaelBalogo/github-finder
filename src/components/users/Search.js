@@ -1,60 +1,47 @@
-import React, { Component } from 'react';
-import PropTypes from 'prop-types';
+import React, { useState, useContext } from 'react';
+import GithubContext from '../../context/github/githubContext';
+import AlertContext from '../../context/alert/alertContext';
 
-export class Search extends Component {
-	state = {
-		text: '',
-	};
+const Search = () => {
+	const githubContext = useContext(GithubContext);
+	const alertContext = useContext(AlertContext);
 
-	onSubmit = e => {
+	const [text, setText] = useState('');
+	const { setAlert } = alertContext;
+
+	const onSubmit = e => {
 		e.preventDefault();
 
-		if (this.state.text === '') {
-			this.props.setAlert('Please type something', 'light');
+		if (text === '') {
+			setAlert('Please type something', 'light');
 		} else {
-			this.props.searchUsers(this.state.text);
-			this.setState({ text: '' });
+			githubContext.searchUsers(text);
+			setText('');
 		}
 	};
 
-	onChange = e => this.setState({ [e.target.name]: e.target.value });
+	const onChange = e => setText(e.target.value);
 
-	render() {
-		const { clearUsers, showClear } = this.props;
-		const { text } = this.state;
-
-		return (
-			<form onSubmit={this.onSubmit} className='form'>
+	return (
+		<form onSubmit={onSubmit} className='form'>
+			<input
+				type='text'
+				name='text'
+				placeholder='Search users...'
+				value={text}
+				onChange={onChange}
+			/>
+			<input type='submit' value='Search' className='btn btn-dark btn-block' />
+			{githubContext.users.length > 0 && (
 				<input
-					type='text'
-					name='text'
-					placeholder='Search users...'
-					value={text}
-					onChange={this.onChange}
+					type='button'
+					value='Clear'
+					className='btn btn-light btn-block'
+					onClick={githubContext.clearUsers}
 				/>
-				<input
-					type='submit'
-					value='Search'
-					className='btn btn-dark btn-block'
-				/>
-				{showClear && (
-					<input
-						type='button'
-						value='Clear'
-						className='btn btn-light btn-block'
-						onClick={clearUsers}
-					/>
-				)}
-			</form>
-		);
-	}
-}
-
-Search.propTypes = {
-	searchUsers: PropTypes.func.isRequired,
-	clearUsers: PropTypes.func.isRequired,
-	showClear: PropTypes.bool.isRequired,
-	setAlert: PropTypes.func.isRequired,
+			)}
+		</form>
+	);
 };
 
 export default Search;
